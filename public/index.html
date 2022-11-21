@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat</title>
+  <link rel="stylesheet" type="text/css" href="chat.css" />
+</head>
+
+<body>
+  <div class="message_history"></div>
+  <form id="chat">
+    <input type="text" id="message" name="message" />
+    <input type="submit" value="Enviar mensagem" />
+  </form>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/web-socket-js/1.0.0/web_socket.min.js">
+  </script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.6/dayjs.min.js"></script>
+  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+  <script type="text/javascript">
+    const socket = io()
+
+    function showMessage( message ) {
+      $( '.message_history' ).append( `<div class="message"><strong>[ 
+        ${ dayjs(message.createdAt).format( 'DD/MM/YY HH:mm' ) } 
+          ]</strong>: ${ message.text }</div>`)
+    }
+
+    socket.on( 'messageHistory', messages => {
+      for ( message of messages ) {
+        showMessage( message )
+      }
+    } )
+
+    socket.on( 'showMessage', message => showMessage( message ) )
+
+    $( '#chat').submit( event => {
+      event.preventDefault()
+      console.log(event)
+
+      const text = $( 'input[name=message]' ).val()
+
+      if (text.length) {
+        console.log()
+        const message = {
+          text,
+          createdAt: new Date(),
+        }
+        showMessage( message )
+        socket.emit( 'message', message )
+      }
+    } )
+  </script>
+</body>
+
+</html>
